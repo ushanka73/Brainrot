@@ -1,5 +1,5 @@
 3. Linggoy
-- Modul dan aset: core/search.py, maze.py, verify.py
+- Modul dan aset: core/search.py, maze.py
 - Tugas: Membuat Best First Search yang dipakai kedua pengejar, dengan target sesuai perilaku masing-masing. Membuat Layout Maze dan posisi awal objek, memeriksa validitas
 
 
