@@ -2,6 +2,16 @@
 - Modul dan aset: core/search.py, maze.py
 - Tugas: Membuat Best First Search yang dipakai kedua pengejar, dengan target sesuai perilaku masing-masing. Membuat Layout Maze dan posisi awal objek, memeriksa validitas
 
+jalur hytam
+jalur = best_first_search(peta, pos_hytam, pos_dava)
+if len(jalur) > 1:
+    pos_hytam = jalur[1]
+
+jalur bayang 
+target = target_bayang(peta, pos_dava, arah_terakhir)
+jalur = best_first_search(peta, pos_bayang, target)
+if len(jalur) > 1:
+    pos_bayang = jalur[1]
 
 
 MAZES = {
