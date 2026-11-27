@@ -2,18 +2,48 @@ import cairo
 import os
 
 UKURAN = 40      
-BARIS = 18       
-KOLOM = 32       
-UKURAN_LANTAI = 40
-TEBAL_TEMBOK = 1     
+
+PETA = [
+    "################################",
+    "#D00000#0000000#0000000#0000000#",
+    "#0####0#0#####0#0#####0#0#####0#",
+    "#0#0000#0#00000#00000#000#00000#",
+    "#0#0####0#0#########0#####0###0#",
+    "#0#000000#00000#00000#00000#000#",
+    "#0######0#####0#0###0#0#####0#0#",
+    "#000000#00000#000#000#0#00000#0#",
+    "######0#####0#####0###0#0#####0#",
+    "#000000#000#0000000#000#00000#0#",
+    "#0######0#0#######0#0#######0#0#",
+    "#00000000#00000H0#0#0000000#000#",
+    "#0########0#####0#0#######0###0#",
+    "#0#00000000#00000#00000#0#00000#",
+    "#0#0########0#########0#0#####0#",
+    "#0#0000000#0000000B0000#0000000#",
+    "#000#####000#####000####0#####0#",
+    "##############################E#",
+]
+
+
+BARIS = len(PETA)
+KOLOM = len(PETA[0])
+
+
+for nomor, baris_peta in enumerate(PETA, start=1):
+    if len(baris_peta) != KOLOM:
+        raise ValueError(
+            f"Baris ke-{nomor} panjangnya {len(baris_peta)}, harusnya {KOLOM}"
+        )
+
+LANTAI_A = ((1.000, 0.953, 0.839), (1.000, 0.976, 0.919), (0.840, 0.801, 0.705))   #
+LANTAI_B = ((0.949, 0.839, 0.667), (0.974, 0.919, 0.834), (0.797, 0.705, 0.560))   
 
 surface = cairo.ImageSurface(cairo.FORMAT_RGB24, UKURAN * KOLOM, UKURAN * BARIS)
 ctx = cairo.Context(surface)
 
 
 def gambar_tembok(ctx):
-    
-    
+
     ctx.rectangle(0, 0, UKURAN, UKURAN)
     ctx.clip()
 
@@ -71,75 +101,60 @@ def gambar_tembok(ctx):
     ctx.stroke()
 
 
-def gambar_lantai(ctx, ukuran):
-    
+def gambar_lantai(ctx, ukuran, warna):
+    isi, terang, gelap = warna
+
     ctx.rectangle(0, 0, ukuran, ukuran)
     ctx.clip()
 
-    # isinya lantai: pink agak putihan dikit
-    ctx.set_source_rgb(1.000, 0.776, 0.851)
+    # isinya lantai
+    ctx.set_source_rgb(*isi)
     ctx.paint()
 
     # sisi atas & kirinya: agak lebih terang
-    ctx.set_source_rgb(1.000, 0.855, 0.906)
+    ctx.set_source_rgb(*terang)
     ctx.move_to(0, 1)
     ctx.line_to(ukuran, 1)
     ctx.stroke()
 
-    ctx.set_source_rgb(1.000, 0.855, 0.906)
+    ctx.set_source_rgb(*terang)
     ctx.move_to(1, 0)
     ctx.line_to(1, ukuran)
     ctx.stroke()
 
-    # ini yang sisi bawah sama kanan: sedikit lebih gelappp (garis antar kotak)
-    ctx.set_source_rgb(1.000, 0.675, 0.784)
+    # sisi bawah sama kanan: sedikit lebih gelap (garis antar kotak)
+    ctx.set_source_rgb(*gelap)
     ctx.move_to(0, ukuran - 1)
     ctx.line_to(ukuran, ukuran - 1)
     ctx.stroke()
 
-    ctx.set_source_rgb(1.000, 0.675, 0.784)
+    ctx.set_source_rgb(*gelap)
     ctx.move_to(ukuran - 1, 0)
     ctx.line_to(ukuran - 1, ukuran)
     ctx.stroke()
 
 
-# ini lantai: isi bagian tengahnya 
-area_x = TEBAL_TEMBOK * UKURAN
-area_y = TEBAL_TEMBOK * UKURAN
-area_lebar = (KOLOM - 2 * TEBAL_TEMBOK) * UKURAN
-area_tinggi = (BARIS - 2 * TEBAL_TEMBOK) * UKURAN
 
-ctx.save()
-ctx.rectangle(area_x, area_y, area_lebar, area_tinggi)
-ctx.clip()   
-for y in range(area_y, area_y + area_tinggi, UKURAN_LANTAI):
-    for x in range(area_x, area_x + area_lebar, UKURAN_LANTAI):
-        ctx.save()
-        ctx.translate(x, y)
-        gambar_lantai(ctx, UKURAN_LANTAI)
-        ctx.restore()
-ctx.restore()
-
-# ini tembok: di pinggir (atas, bawah, kiri, kanan), tebalnya TEBAL_TEMBOK tile
-for kolom in range(KOLOM):
-    for baris in range(BARIS):
-        di_pinggir = (
-            baris < TEBAL_TEMBOK or baris >= BARIS - TEBAL_TEMBOK or
-            kolom < TEBAL_TEMBOK or kolom >= KOLOM - TEBAL_TEMBOK
-        )
-        if not di_pinggir:
-            continue
+for baris in range(BARIS):
+    for kolom in range(KOLOM):
+        karakter = PETA[baris][kolom]
 
         ctx.save()
-        ctx.translate(kolom * UKURAN, baris * UKURAN)   # geser ke kanan & ke bawah
-        gambar_tembok(ctx)
+        ctx.translate(kolom * UKURAN, baris * UKURAN)   # geser ke kotak yang dituju
+
+        if karakter == "#":
+            gambar_tembok(ctx)
+        else:
+            
+            warna = LANTAI_A if (kolom + baris) % 2 == 0 else LANTAI_B
+            gambar_lantai(ctx, UKURAN, warna)
+
         ctx.restore()
 
 
-
-surface.write_to_png("tembokcoba.png")
+surface.write_to_png("labirin1.png")
 main_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 asset_folder = os.path.join(main_folder, "asset")
 os.makedirs(asset_folder, exist_ok=True)
-surface.write_to_png(os.path.join(asset_folder, "tembok.png"))
+surface.write_to_png(os.path.join(asset_folder, "labirin1.png"))
 print("Hytam")
